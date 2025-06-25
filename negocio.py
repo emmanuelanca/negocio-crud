@@ -3,7 +3,6 @@ from tkinter import ttk
 import psycopg2
 from tksheet import Sheet
 
-# Database connection parameters
 DB_NAME = "DbEmmanuel"
 DB_USER = "emmanuel"
 DB_PASSWORD = "adsf"
@@ -11,30 +10,20 @@ DB_HOST = "localhost"
 DB_PORT = "5432"
 DB_SCHEMA = "negocio"
 
+conn = None
+cur = None
+
 def fetch_data(table_name):
     """Fetch all rows from specified table under negocio schema."""
-    conn = None
     try:
-        conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST,
-            port=DB_PORT
-        )
-        cur = conn.cursor()
-        cur.execute(f"SELECT * FROM {DB_SCHEMA}.{table_name} LIMIT 100;")  # limit for demo
+        cur.execute(f"SELECT * FROM {DB_SCHEMA}.{table_name} LIMIT 20;")  # limit for demo
         columns = [desc[0] for desc in cur.description]
         rows = cur.fetchall()
-        cur.close()
         return columns, rows
     except Exception as e:
         print(f"Error fetching data from {table_name}: {e}")
         return [], []
-    finally:
-        if conn:
-            conn.close()
-
+            
 def create_tab(tab_frame, table_name):
     """Create a sheet that fills the available space horizontally and vertically."""
     # Outer container fills the entire tab
@@ -65,9 +54,18 @@ def create_tab(tab_frame, table_name):
 
     sheet.set_sheet_data(rows)
     return sheet
-
             
 def main():
+    global conn, cur
+    conn = psycopg2.connect(
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT
+    )
+    cur = conn.cursor()
+
     root = tk.Tk()
     root.title("Gestor de negocio")
     root.geometry("900x500")
